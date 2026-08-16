@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import type { RecurrenceType, TaskCategory, TaskOccurrence } from "@/lib/types";
+import { OptionPicker } from "@/components/option-picker";
 
 export function TaskEditor({ task, onClose, onChanged }: { task: TaskOccurrence; onClose: () => void; onChanged: () => void }) {
   const [title, setTitle] = useState(task.title);
@@ -43,9 +44,9 @@ export function TaskEditor({ task, onClose, onChanged }: { task: TaskOccurrence;
       <label><span>Helpful detail</span><input value={detail} onChange={(event) => setDetail(event.target.value)} maxLength={300} placeholder="Optional—keep it short" /></label>
       <div className="task-editor-grid">
         <label><span>Time</span><input type="time" value={dueTime} onChange={(event) => setDueTime(event.target.value)} /></label>
-        <label><span>About how long?</span><select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="25">25 min</option><option value="45">45 min</option><option value="60">1 hour</option></select></label>
-        <label><span>Repeats</span><select value={recurrence} onChange={(event) => setRecurrence(event.target.value as RecurrenceType)}><option value="none">Never</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option></select></label>
-        <label><span>Category</span><select value={category} onChange={(event) => setCategory(event.target.value as TaskCategory)}><option value="school">School</option><option value="home">Home</option><option value="you">Personal</option></select></label>
+        <OptionPicker label="About how long?" value={duration} onChange={setDuration} options={[{ value: 5, label: "5 min" }, { value: 10, label: "10 min" }, { value: 15, label: "15 min" }, { value: 25, label: "25 min" }, { value: 45, label: "45 min" }, { value: 60, label: "1 hour" }]} />
+        <OptionPicker label="Repeats" value={recurrence} onChange={setRecurrence} options={[{ value: "none", label: "Never" }, { value: "daily", label: "Every day" }, { value: "weekdays", label: "Weekdays" }, { value: "weekly", label: "Every week" }]} />
+        <OptionPicker label="Category" value={category} onChange={setCategory} options={[{ value: "school", label: "School" }, { value: "home", label: "Home" }, { value: "you", label: "Personal" }]} />
       </div>
       {error && <p className="task-editor-error">{error}</p>}
       <div className="task-editor-actions">

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { RecurrenceType, SchoolEvent, TaskCategory, TaskOccurrence, WeatherSnapshot } from "@/lib/types";
 import { TaskEditor } from "@/components/task-editor";
+import { OptionPicker } from "@/components/option-picker";
 
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const fallbackWeather: WeatherSnapshot = { temperature: 68, condition: "cloudy", high: 72, low: 61, sass: "The sun left the group chat." };
@@ -191,8 +192,8 @@ export function Dashboard() {
             {showComposer && <form className="quick-add advanced" onSubmit={addTask}>
               <input autoFocus value={quickTask} onChange={(event) => setQuickTask(event.target.value)} placeholder="What needs doing?" aria-label="Task title" />
               <input type="time" value={quickTime} onChange={(event) => setQuickTime(event.target.value)} aria-label="Due time" />
-              <select value={quickRepeat} onChange={(event) => setQuickRepeat(event.target.value as RecurrenceType)} aria-label="Repeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option></select>
-              <select value={quickCategory} onChange={(event) => setQuickCategory(event.target.value as TaskCategory)} aria-label="Category"><option value="school">School</option><option value="home">Home</option><option value="you">Personal</option></select>
+              <OptionPicker label="Repeat" showLabel={false} value={quickRepeat} onChange={setQuickRepeat} options={[{ value: "none", label: "Doesn’t repeat" }, { value: "daily", label: "Every day" }, { value: "weekdays", label: "Weekdays" }, { value: "weekly", label: "Every week" }]} />
+              <OptionPicker label="Category" showLabel={false} value={quickCategory} onChange={setQuickCategory} options={[{ value: "school", label: "School" }, { value: "home", label: "Home" }, { value: "you", label: "Personal" }]} />
               <button type="submit">Add</button><button type="button" onClick={() => setShowComposer(false)}>Cancel</button>
             </form>}
 
