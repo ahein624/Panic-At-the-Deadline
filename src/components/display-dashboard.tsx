@@ -12,6 +12,9 @@ type DisplayData = {
 };
 
 const clockStyles = ["neon", "arcade", "terminal"] as const;
+const DATA_REFRESH_MS = 60_000;
+const VERSION_CHECK_MS = 6 * 60 * 60 * 1_000;
+const SAFETY_RELOAD_MS = 14 * 24 * 60 * 60 * 1_000;
 
 function dayLabel(date: string, format: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-US", { ...format, timeZone: "UTC" }).format(new Date(`${date}T12:00:00Z`));
@@ -32,26 +35,73 @@ export function DisplayDashboard() {
   const pointerStart = useRef<number | null>(null);
 
   useEffect(() => {
-    let active = true;
     const refreshClock = window.setTimeout(() => setNow(new Date()), 0);
     const clockTimer = window.setInterval(() => setNow(new Date()), 15_000);
-    fetch("/api/display/week")
-      .then((response) => {
-        if (!response.ok) throw new Error("Display sync failed");
-        return response.json();
-      })
-      .then((payload: DisplayData) => {
-        if (!active) return;
-        setData(payload);
-        const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
-        const index = payload.days.findIndex((day) => day.date === today);
-        if (index >= 0) setSelectedDay(index);
-      })
-      .catch(() => active && setOffline(true));
     return () => {
-      active = false;
       window.clearTimeout(refreshClock);
       window.clearInterval(clockTimer);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let selectedToday = false;
+
+    async function refreshDisplay() {
+      try {
+        const response = await fetch("/api/display/week", { cache: "no-store" });
+        if (!response.ok) throw new Error("Display sync failed");
+        const payload: DisplayData = await response.json();
+        if (!active) return;
+        setData(payload);
+        setOffline(false);
+        if (!selectedToday) {
+          const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+          const index = payload.days.findIndex((day) => day.date === today);
+          if (index >= 0) setSelectedDay(index);
+          selectedToday = true;
+        }
+      } catch {
+        if (active) setOffline(true);
+      }
+    }
+
+    void refreshDisplay();
+    const dataTimer = window.setInterval(refreshDisplay, DATA_REFRESH_MS);
+    window.addEventListener("online", refreshDisplay);
+    return () => {
+      active = false;
+      window.clearInterval(dataTimer);
+      window.removeEventListener("online", refreshDisplay);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    let knownVersion: string | null = document.documentElement.dataset.dplId ?? null;
+
+    async function checkForUpdate() {
+      try {
+        const response = await fetch("/api/version", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload: { version: string } = await response.json();
+        if (!active) return;
+        if (knownVersion && payload.version !== knownVersion) window.location.reload();
+        knownVersion = payload.version;
+      } catch {
+        // A missed check is harmless; the next interval or online event retries it.
+      }
+    }
+
+    void checkForUpdate();
+    const versionTimer = window.setInterval(checkForUpdate, VERSION_CHECK_MS);
+    const safetyReload = window.setTimeout(() => window.location.reload(), SAFETY_RELOAD_MS);
+    window.addEventListener("online", checkForUpdate);
+    return () => {
+      active = false;
+      window.clearInterval(versionTimer);
+      window.clearTimeout(safetyReload);
+      window.removeEventListener("online", checkForUpdate);
     };
   }, []);
 

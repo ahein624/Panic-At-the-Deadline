@@ -110,6 +110,10 @@ svg { width: 22px; height: 22px; }
 .add-button svg { width: 16px; height: 16px; color: var(--purple); }
 .quick-add { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; margin-bottom: 12px; }
 .quick-add.advanced { grid-template-columns: minmax(180px, 1fr) 112px 145px 105px auto auto; }
+.quick-add-layer { display: contents; }
+.mobile-composer-head { display: none; }
+.quick-add > label { display: flex; min-width: 0; }
+.quick-add > label > span, .quick-add .option-picker-label { display: none; }
 .quick-add input { min-width: 0; padding: 12px 14px; border: 1px solid #59456a; border-radius: 10px; background: #0f0d12; color: var(--ink); }
 .quick-add button { border: 0; border-radius: 9px; padding: 0 13px; background: #8059bd; cursor: pointer; }
 .quick-add > button:last-child { background: #242029; color: var(--muted); }
@@ -250,11 +254,21 @@ svg { width: 22px; height: 22px; }
   .task-row { grid-template-columns: auto 3px 1fr auto; gap: 10px; }
   .task-row time { grid-column: 3; justify-self: start; }
   .more-button { grid-column: 4; grid-row: 1 / span 2; }
-  .quick-add { grid-template-columns: 1fr auto; }
-  .quick-add > button:last-child { display: none; }
-  .quick-add.advanced { grid-template-columns: 1fr 1fr; }
-  .quick-add.advanced input:first-child { grid-column: 1 / -1; }
-  .quick-add.advanced button[type="submit"] { min-height: 42px; }
+  .quick-add-layer { position: fixed; inset: 0; z-index: 30; display: flex; align-items: flex-end; background: rgba(5,4,7,.76); backdrop-filter: blur(8px); }
+  .quick-add.advanced { width: 100%; max-height: min(92dvh, 720px); grid-template-columns: 1fr 1fr; gap: 14px 10px; overflow-y: auto; margin: 0; padding: 18px max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); border: 1px solid #4e3a5d; border-bottom: 0; border-radius: 22px 22px 0 0; background: linear-gradient(160deg, #1c1621, #100e13); box-shadow: 0 -22px 70px rgba(0,0,0,.5); }
+  .mobile-composer-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
+  .mobile-composer-head div { display: flex; flex-direction: column; gap: 3px; }
+  .mobile-composer-head span { color: #c79aff; font-size: 10px; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+  .mobile-composer-head strong { font-size: 17px; }
+  .mobile-composer-head button { width: 42px; height: 42px; padding: 0; background: #27212c; color: #aaa0b0; font-size: 25px; }
+  .quick-add > label { flex-direction: column; gap: 7px; }
+  .quick-add .option-picker { gap: 7px; }
+  .quick-add > label > span, .quick-add .option-picker-label { display: block; color: #9c92a3; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .quick-add-title { grid-column: 1 / -1; }
+  .quick-add input, .quick-add .option-picker-trigger { min-height: 52px; font-size: 16px; }
+  .quick-add > button { min-height: 52px; font-size: 14px; font-weight: 800; }
+  .quick-add > button[type="submit"] { background: #8a5bc7; }
+  .quick-add > button:last-child { grid-column: 1 / -1; display: block; background: transparent; }
   .school-event-row { grid-template-columns: auto 1fr; }
   .school-event-row i { display: none; }
   .mobile-add { position: fixed; right: 20px; bottom: 82px; z-index: 7; width: 54px; height: 54px; display: grid; place-items: center; border: 0; border-radius: 18px; background: #8a5bc7; box-shadow: 0 8px 30px rgba(0,0,0,.4); }

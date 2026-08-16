@@ -18,7 +18,10 @@ services:
       retries: 10
 
   web:
-    build: .
+    build:
+      context: .
+      args:
+        NEXT_DEPLOYMENT_ID: ${NEXT_DEPLOYMENT_ID:-local}
     container_name: panic-at-the-deadline
     restart: unless-stopped
     ports:
@@ -28,6 +31,7 @@ services:
       DATABASE_URL: postgresql://panic:${POSTGRES_PASSWORD:-change-me}@database:5432/panic
       WEATHER_LATITUDE: ${WEATHER_LATITUDE:-40.4284}
       WEATHER_LONGITUDE: ${WEATHER_LONGITUDE:--79.6975}
+      NEXT_DEPLOYMENT_ID: ${NEXT_DEPLOYMENT_ID:-local}
     depends_on:
       database:
         condition: service_healthy
