@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    container_name: panic-at-the-deadline
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      TZ: America/New_York
