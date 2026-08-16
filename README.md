@@ -66,6 +66,13 @@ Compose network. No secrets or private student data should be committed to this
 public repository. The included FR closure and testing dates are public calendar
 events; the source PDF is intentionally not committed.
 
+For a dedicated Proxmox LXC, the application can instead run directly under
+systemd with Debian PostgreSQL. The production unit is in
+`infra/systemd/panic-at-the-deadline.service`; it runs as the unprivileged
+`panic` user and expects Node 22 at `/opt/node-v22` and a protected `.env` file
+in `/opt/panic-at-the-deadline`. This avoids weakening the outer LXC profile for
+nested Docker.
+
 ## Automatic updates
 
 The display refreshes task and calendar data every minute, so tasks entered on a
@@ -75,8 +82,8 @@ reload after 14 days.
 
 For a Linux homelab host, `scripts/check-for-updates.sh` checks `origin/main`
 without changing anything. Pass `--apply` to fast-forward a clean `main`
-checkout and rebuild the Docker Compose stack. The included systemd timer runs
-that update every 14 days:
+checkout and rebuild either the native systemd service or the Docker Compose
+stack. The included systemd timer runs that update every 14 days:
 
 ```bash
 sudo cp infra/systemd/panic-update.service infra/systemd/panic-update.timer /etc/systemd/system/

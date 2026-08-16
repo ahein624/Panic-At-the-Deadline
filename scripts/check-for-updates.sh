@@ -34,5 +34,20 @@ fi
 git merge --ff-only origin/main
 NEXT_DEPLOYMENT_ID=$(git rev-parse --short=12 HEAD)
 export NEXT_DEPLOYMENT_ID
-docker compose up --build -d --remove-orphans
+
+if systemctl cat panic-at-the-deadline.service >/dev/null 2>&1; then
+  if grep -q '^NEXT_DEPLOYMENT_ID=' .env; then
+    sed -i "s/^NEXT_DEPLOYMENT_ID=.*/NEXT_DEPLOYMENT_ID=$NEXT_DEPLOYMENT_ID/" .env
+  else
+    printf '\nNEXT_DEPLOYMENT_ID=%s\n' "$NEXT_DEPLOYMENT_ID" >> .env
+  fi
+  npm ci
+  npm run build
+  chown -R root:panic node_modules .next
+  chmod -R g+rX node_modules .next
+  systemctl restart panic-at-the-deadline.service
+else
+  docker compose up --build -d --remove-orphans
+fi
+
 echo "Update installed. The display will notice the new version and reload itself."
