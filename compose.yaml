@@ -1,4 +1,22 @@
 services:
+  database:
+    image: postgres:17-alpine
+    container_name: panic-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: panic
+      POSTGRES_USER: panic
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      TZ: America/New_York
+    volumes:
+      - panic-data:/var/lib/postgresql/data
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U panic -d panic"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   web:
     build: .
     container_name: panic-at-the-deadline
@@ -7,3 +25,12 @@ services:
       - "3000:3000"
     environment:
       TZ: America/New_York
+      DATABASE_URL: postgresql://panic:${POSTGRES_PASSWORD:-change-me}@database:5432/panic
+      WEATHER_LATITUDE: ${WEATHER_LATITUDE:-40.4284}
+      WEATHER_LONGITUDE: ${WEATHER_LONGITUDE:--79.6975}
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  panic-data:
