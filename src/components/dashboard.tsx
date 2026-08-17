@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { RecurrenceType, SchoolEvent, TaskCategory, TaskOccurrence, WeatherSnapshot } from "@/lib/types";
 import { TaskEditor } from "@/components/task-editor";
+import { OptionPicker } from "@/components/option-picker";
 
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const fallbackWeather: WeatherSnapshot = { temperature: 68, condition: "cloudy", high: 72, low: 61, sass: "The sun left the group chat." };
@@ -188,13 +189,16 @@ export function Dashboard() {
         <div className="content-grid">
           <section className="today-panel">
             <div className="section-heading"><div><p className="eyebrow">{fullDate}</p><h2>Today’s quests</h2></div><button className="add-button" onClick={() => setShowComposer(true)}><Icon name="plus" /> Add task</button></div>
-            {showComposer && <form className="quick-add advanced" onSubmit={addTask}>
-              <input autoFocus value={quickTask} onChange={(event) => setQuickTask(event.target.value)} placeholder="What needs doing?" aria-label="Task title" />
-              <input type="time" value={quickTime} onChange={(event) => setQuickTime(event.target.value)} aria-label="Due time" />
-              <select value={quickRepeat} onChange={(event) => setQuickRepeat(event.target.value as RecurrenceType)} aria-label="Repeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">Every week</option></select>
-              <select value={quickCategory} onChange={(event) => setQuickCategory(event.target.value as TaskCategory)} aria-label="Category"><option value="school">School</option><option value="home">Home</option><option value="you">Personal</option></select>
-              <button type="submit">Add</button><button type="button" onClick={() => setShowComposer(false)}>Cancel</button>
-            </form>}
+            {showComposer && <div className="quick-add-layer">
+              <form className="quick-add advanced" onSubmit={addTask}>
+                <div className="mobile-composer-head"><div><span>New quest</span><strong>{fullDate}</strong></div><button type="button" onClick={() => setShowComposer(false)} aria-label="Close task form">×</button></div>
+                <label className="quick-add-title"><span>What needs doing?</span><input autoFocus value={quickTask} onChange={(event) => setQuickTask(event.target.value)} placeholder="e.g. Study chapter 4" aria-label="Task title" /></label>
+                <label className="quick-add-time"><span>Time (optional)</span><input type="time" value={quickTime} onChange={(event) => setQuickTime(event.target.value)} aria-label="Due time" /></label>
+                <OptionPicker label="Repeat" value={quickRepeat} onChange={setQuickRepeat} options={[{ value: "none", label: "Doesn’t repeat" }, { value: "daily", label: "Every day" }, { value: "weekdays", label: "Weekdays" }, { value: "weekly", label: "Every week" }]} />
+                <OptionPicker label="Category" value={quickCategory} onChange={setQuickCategory} options={[{ value: "school", label: "School" }, { value: "home", label: "Home" }, { value: "you", label: "Personal" }]} />
+                <button type="submit">Add task</button><button type="button" onClick={() => setShowComposer(false)}>Cancel</button>
+              </form>
+            </div>}
 
             {dayEvents.map((event) => <article key={event.id} className={`school-event-row ${event.noSchool ? "no-school" : event.kind}`}><span>{event.noSchool ? "★" : "◆"}</span><div><strong>{event.title}</strong><small>{event.detail}</small></div><i>School calendar</i></article>)}
 
@@ -224,7 +228,7 @@ export function Dashboard() {
         <div className="focus-actions"><button onClick={() => { void toggleTask(focusTask); setFocusTask(null); }}><Icon name="check" /> Done</button><button onClick={() => setFocusTask(null)}>Pause</button></div>
       </div></div>}
       {editingTask && <TaskEditor task={editingTask} onClose={() => setEditingTask(null)} onChanged={() => setReloadToken((value) => value + 1)} />}
-      <button className="mobile-add" onClick={() => setShowComposer(true)} aria-label="Add task"><Icon name="plus" /></button>
+      {!showComposer && <button className="mobile-add" onClick={() => setShowComposer(true)} aria-label="Add task"><Icon name="plus" /></button>}
     </main>
   );
 }

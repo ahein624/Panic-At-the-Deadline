@@ -1,0 +1,11 @@
+[Unit]
+Description=Check Panic! At the Deadline for updates every two weeks
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=14d
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target

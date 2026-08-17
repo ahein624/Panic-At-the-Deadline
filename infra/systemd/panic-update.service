@@ -1,0 +1,9 @@
+[Unit]
+Description=Update Panic! At the Deadline
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/panic-at-the-deadline.conf
+ExecStart=/bin/sh -lc 'cd "$PANIC_APP_DIR" && ./scripts/check-for-updates.sh --apply'

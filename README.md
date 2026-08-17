@@ -6,7 +6,7 @@ LVGL display client planned alongside it.
 
 ## What works now
 
-- Responsive, one-week web editor
+- Responsive, one-week web editor with a phone-first task-entry sheet
 - Dedicated no-scroll `/display` interface designed at exactly 800×480
 - A single prominent “Do this next” recommendation
 - Low-friction task capture with time, category, and recurrence
@@ -19,6 +19,7 @@ LVGL display client planned alongside it.
 - Three panel clock styles
 - Locked Franklin Regional 2026–27 calendar events
 - A compact ESP32-facing JSON route at `/api/display/week`
+- Display data refresh every minute and automatic deployed-version detection
 - PostgreSQL persistence in the homelab container stack
 
 Without `DATABASE_URL`, local development uses a temporary in-memory store with
@@ -64,6 +65,35 @@ The application listens on port `3000`; PostgreSQL is only exposed inside the
 Compose network. No secrets or private student data should be committed to this
 public repository. The included FR closure and testing dates are public calendar
 events; the source PDF is intentionally not committed.
+
+For a dedicated Proxmox LXC, the application can instead run directly under
+systemd with Debian PostgreSQL. The production unit is in
+`infra/systemd/panic-at-the-deadline.service`; it runs as the unprivileged
+`panic` user and expects Node 22 at `/opt/node-v22` and a protected `.env` file
+in `/opt/panic-at-the-deadline`. This avoids weakening the outer LXC profile for
+nested Docker.
+
+## Automatic updates
+
+The display refreshes task and calendar data every minute, so tasks entered on a
+phone appear without using the panel. It checks the deployed app version every
+six hours, reloads immediately when a new version is found, and performs a safety
+reload after 14 days.
+
+For a Linux homelab host, `scripts/check-for-updates.sh` checks `origin/main`
+without changing anything. Pass `--apply` to fast-forward a clean `main`
+checkout and rebuild either the native systemd service or the Docker Compose
+stack. The included systemd timer runs that update every 14 days:
+
+```bash
+sudo cp infra/systemd/panic-update.service infra/systemd/panic-update.timer /etc/systemd/system/
+printf 'PANIC_APP_DIR=%s\n' "$PWD" | sudo tee /etc/panic-at-the-deadline.conf
+sudo systemctl daemon-reload
+sudo systemctl enable --now panic-update.timer
+```
+
+The updater refuses to run from a non-`main` branch or with local changes, so it
+will not overwrite in-progress work.
 
 ## Planned architecture
 
